@@ -1,18 +1,5 @@
 var exec = require('cordova/exec');
 
-// module.exports= {
-// 	coolMethod : function (arg0, success, error) {
-//     cordova.exec(success, error, 'TokenCordovaWrapper', 'coolMethod', [arg0]);
-// }
-// };
-
-// module.exports = {
-//     createMemberToken: function (successCallback, errorCallback) {
-//         cordova.exec(successCallback, errorCallback, "TokenCordovaWrapper", "createMemberToken");
-//     }
-// };
-
-
 exports.createMember = function (arg0, success, error) {
     exec(success, error, 'token', 'createMember', [arg0]);
 };
@@ -81,11 +68,11 @@ exports.provisionRequest = function (arg0, success, error) {
     exec(success, error, 'token', 'provisionRequest', [arg0]);
 };
 
-exports.provisionResponse = function (arg0, success, error) {
-    exec(success, error, 'token', 'provisionResponse', [arg0]);
+exports.approveProvision = function (arg0, success, error) {
+    exec(success, error, 'token', 'approveProvision', [arg0]);
 };
 
-exports.getMember = function (arg0, success, error) {
-    exec(success, error, 'token', 'getMember', [arg0]);
+exports.checkMember = function (arg0, success, error) {
+    exec(success, error, 'token', 'checkMember', [arg0]);
 };
 

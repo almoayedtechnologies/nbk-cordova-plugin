@@ -52,6 +52,7 @@ import com.google.protobuf.util.JsonFormat;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 // import okhttp3.Call;
@@ -84,7 +85,8 @@ public class Token extends CordovaPlugin {
     public static final String realm = "at-nbkb";
 
     public String recoveryAgent;
-    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.PHONE;
+//    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.CUSTOM;
+    public AliasProtos.Alias.Type type_user;
     public static final AliasProtos.Alias.Type type_bank = AliasProtos.Alias.Type.BANK;
     public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.SANDBOX;
     Context context;
@@ -145,11 +147,11 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("provisionRequest")){
             this.provisionRequest(args,callbackContext);
             return true;
-        }else if(action.equals("provisionResponse")){
-            this.provisionResponse(args,callbackContext);
+        }else if(action.equals("approveProvision")){
+            this.approveProvision(args,callbackContext);
             return true;
-        }else if(action.equals("getMember")){
-            this.getMember(args,callbackContext);
+        }else if(action.equals("checkMember")){
+            this.checkMember(args,callbackContext);
             return true;
         }
 
@@ -160,9 +162,10 @@ public class Token extends CordovaPlugin {
           JSONObject jsonObject;
           try {
              //System.out.println("args======"+args.getString(0));
-             String mobileNumber = new JSONObject(args.getString(0)).getString("mobileNumber");
+              String aliasValue = new JSONObject(args.getString(0)).getString("aliasValue");
+              String aliasType = new JSONObject(args.getString(0)).getString("aliasType");
                 tokenClient = getTokenClient(context);
-                alias = getAlias(mobileNumber);
+                alias = getAlias(aliasType,aliasValue);
                 bankAlias = getBankAlias();
                 recoveryAgent = getBankMember();
 
@@ -202,11 +205,19 @@ public class Token extends CordovaPlugin {
         }
     }
 
-    public AliasProtos.Alias getAlias(String mobileNumber){
+    public AliasProtos.Alias getAlias(String aliasType,String aliasValue){
 
         try {
+            if(aliasType.equalsIgnoreCase("CUSTOM")) {
+                type_user = AliasProtos.Alias.Type.CUSTOM;
+            } else if(aliasType.equalsIgnoreCase("PHONE")) {
+                type_user = AliasProtos.Alias.Type.PHONE;
+            } else if(aliasType.equalsIgnoreCase("EMAIL")) {
+                type_user = AliasProtos.Alias.Type.EMAIL;
+            }
+
             alias = AliasProtos.Alias.newBuilder()
-                    .setValue(mobileNumber)
+                    .setValue(aliasValue)
                     .setType(type_user)
                     .setRealm(realm)
                     .build();
@@ -261,7 +272,7 @@ public class Token extends CordovaPlugin {
         }
         }
 
-    private void getMember(JSONArray args,CallbackContext callbackContext){
+    private void checkMember(JSONArray args,CallbackContext callbackContext){
         try{
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
             tokenClient = getTokenClient(context);
@@ -477,9 +488,10 @@ public class Token extends CordovaPlugin {
 
             BlobProtos.Blob blob = tokenClient.getMemberBlocking(memberId).getProfilePictureBlocking(tppMemberId,MemberProtos.ProfilePictureSize.ORIGINAL);
             //System.out.println("accounts===="+blob);
-            //System.out.println("accounts===="+blob.getPayload().getData().toByteArray());
+            System.out.println("tpp profile pic===="+blob.getPayload().getData().toStringUtf8());
 
-            callbackContext.success(blob.getPayload().getData().toByteArray());
+            String encodedString = Base64.getEncoder().encodeToString(blob.getPayload().getData().toByteArray());
+            callbackContext.success(encodedString);
         }
         catch (Exception e){
             //e.printStackTrace();
@@ -637,10 +649,8 @@ cordova.getActivity().runOnUiThread(new Runnable() {
                                                                 });
                                                     }
                                                 });
-
                                     }
                                 });
-
                     }
                 });
     }
@@ -801,14 +811,15 @@ cordova.getActivity().runOnUiThread(new Runnable() {
 
     private void provisionRequest(JSONArray args,CallbackContext callbackContext){
         try {
-            String mobileNumber = new JSONObject(args.getString(0)).getString("mobileNumber");
+            String aliasValue = new JSONObject(args.getString(0)).getString("aliasValue");
+            String aliasType = new JSONObject(args.getString(0)).getString("aliasType");
 
             final NotificationProtos.DeviceMetadata deviceMetadata = NotificationProtos.DeviceMetadata.newBuilder()
                     .setApplication("token")
                     .setDevice("android")
                     .build();
             tokenClient = getTokenClient(context);
-            alias = getAlias(mobileNumber);
+            alias = getAlias(aliasType,aliasValue);
             tokenClient.provisionDevice(alias)
                     .flatMap(new Function<DeviceInfo, ObservableSource<?>>() {
                         @Override
@@ -840,14 +851,15 @@ cordova.getActivity().runOnUiThread(new Runnable() {
         }
     }
 
-    private void provisionResponse(JSONArray args,CallbackContext callbackContext) {
+    private void approveProvision(JSONArray args,CallbackContext callbackContext) {
         try {
-            String mobileNumber = new JSONObject(args.getString(0)).getString("mobileNumber");
+            String aliasValue = new JSONObject(args.getString(0)).getString("aliasValue");
+            String aliasType = new JSONObject(args.getString(0)).getString("aliasType");
             String payload = new JSONObject(args.getString(0)).getString("payload");
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
 
             tokenClient = getTokenClient(context);
-            alias = getAlias(mobileNumber);
+            alias = getAlias(aliasType,aliasValue);
 
             NotificationProtos.AddKey.Builder builder = NotificationProtos.AddKey.newBuilder();
             JsonFormat.parser().merge(payload, builder);
