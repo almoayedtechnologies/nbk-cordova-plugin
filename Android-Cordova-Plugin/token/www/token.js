@@ -76,3 +76,7 @@ exports.checkMember = function (arg0, success, error) {
     exec(success, error, 'token', 'checkMember', [arg0]);
 };
 
+exports.resolveAlias = function (arg0, success, error) {
+    exec(success, error, 'token', 'resolveAlias', [arg0]);
+};
+

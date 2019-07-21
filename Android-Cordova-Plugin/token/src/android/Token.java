@@ -72,7 +72,7 @@ public class Token extends CordovaPlugin {
     private static final int LOCK_REQUEST_CODE = 221;
     private static final int SECURITY_SETTING_REQUEST_CODE = 233;
 
-  public UserAuthenticationStore userAuthenticationStore;
+    public UserAuthenticationStore userAuthenticationStore;
     public CryptoEngineFactory cryptoEngineFactory;
     public CryptoEngine cryptoEngine;
     public TokenClient tokenClient;
@@ -85,7 +85,7 @@ public class Token extends CordovaPlugin {
     public static final String realm = "at-nbkb";
 
     public String recoveryAgent;
-//    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.CUSTOM;
+    //    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.CUSTOM;
     public AliasProtos.Alias.Type type_user;
     public static final AliasProtos.Alias.Type type_bank = AliasProtos.Alias.Type.BANK;
     public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.SANDBOX;
@@ -147,32 +147,35 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("provisionRequest")){
             this.provisionRequest(args,callbackContext);
             return true;
-        }else if(action.equals("approveProvision")){
+        } else if(action.equals("approveProvision")){
             this.approveProvision(args,callbackContext);
             return true;
-        }else if(action.equals("checkMember")){
+        } else if(action.equals("checkMember")){
             this.checkMember(args,callbackContext);
+            return true;
+        } else if(action.equals("resolveAlias")){
+            this.resolveAlias(args,callbackContext);
             return true;
         }
 
         return false;
     }
 
-      private void createMember(JSONArray args,CallbackContext callbackContext) {
-          JSONObject jsonObject;
-          try {
-             //System.out.println("args======"+args.getString(0));
-              String aliasValue = new JSONObject(args.getString(0)).getString("aliasValue");
-              String aliasType = new JSONObject(args.getString(0)).getString("aliasType");
-                tokenClient = getTokenClient(context);
-                alias = getAlias(aliasType,aliasValue);
-                bankAlias = getBankAlias();
-                recoveryAgent = getBankMember();
+    private void createMember(JSONArray args,CallbackContext callbackContext) {
+        JSONObject jsonObject;
+        try {
+            //System.out.println("args======"+args.getString(0));
+            String aliasValue = new JSONObject(args.getString(0)).getString("aliasValue");
+            String aliasType = new JSONObject(args.getString(0)).getString("aliasType");
+            tokenClient = getTokenClient(context);
+            alias = getAlias(aliasType,aliasValue);
+            bankAlias = getBankAlias();
+            recoveryAgent = getBankMember();
 
-        member_id = tokenClient.createMemberBlocking(alias,recoveryAgent).memberId();
-        //System.out.println("member===="+member_id);
-        //System.out.println("member===="+recoveryAgent);
-        callbackContext.success(member_id);
+            member_id = tokenClient.createMemberBlocking(alias,recoveryAgent).memberId();
+            //System.out.println("member===="+member_id);
+            //System.out.println("member===="+recoveryAgent);
+            callbackContext.success(member_id);
 
         }catch(Exception e){
             //e.printStackTrace();
@@ -270,7 +273,7 @@ public class Token extends CordovaPlugin {
             //e.printStackTrace();
             callbackContext.error(e.toString());
         }
-        }
+    }
 
     private void checkMember(JSONArray args,CallbackContext callbackContext){
         try{
@@ -282,10 +285,23 @@ public class Token extends CordovaPlugin {
             //e.printStackTrace();
             callbackContext.error(e.toString());
         }
-        }
+    }
 
-        private void subscribe(JSONArray args,CallbackContext callbackContext){
-            JSONObject jsonObject;
+    private void resolveAlias(JSONArray args,CallbackContext callbackContext){
+        try{
+            String aliasValue = new JSONObject(args.getString(0)).getString("aliasValue");
+            String aliasType = new JSONObject(args.getString(0)).getString("aliasType");
+            tokenClient = getTokenClient(context);
+            alias = getAlias(aliasType,aliasValue);            
+            String memberId = tokenClient.resolveAliasBlocking(alias).getId();
+            callbackContext.success(memberId);
+        }catch (Exception e){
+            callbackContext.error(e.toString());
+        }
+    }
+    
+    private void subscribe(JSONArray args,CallbackContext callbackContext){
+        JSONObject jsonObject;
         try {
             if(tokenClient == null) {
                 tokenClient = getTokenClient(context);
@@ -298,20 +314,20 @@ public class Token extends CordovaPlugin {
             callbackContext.error(e.toString());
         }
 
-        }
+    }
 
-        private void getAccounts(JSONArray args,CallbackContext callbackContext){
-            JSONObject jsonObject;
-            try {
+    private void getAccounts(JSONArray args,CallbackContext callbackContext){
+        JSONObject jsonObject;
+        try {
             if(tokenClient == null) {
                 //System.out.println("=======================");
                 //System.out.println("getAccounts:Token client instance is null");
                 //System.out.println("=======================");
                 tokenClient = getTokenClient(context);
             }
-                String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
 
-                JSONArray jsonArray = new JSONArray();
+            JSONArray jsonArray = new JSONArray();
             List<Account> accounts = tokenClient.getMemberBlocking(memberId).getAccountsBlocking();
             //System.out.println("accounts===="+accounts);
             for (int i=0;i<accounts.size();i++){
@@ -326,35 +342,35 @@ public class Token extends CordovaPlugin {
             callbackContext.success(jsonArray.toString());
         }
         catch (Exception e){
-                //e.printStackTrace();
+            //e.printStackTrace();
             callbackContext.error(e.toString());
         }
-        }
+    }
 
-        private void unlinkAccounts(JSONArray args,CallbackContext callbackContext){
-            JSONObject jsonObject;
-            try {
-                if(tokenClient == null) {
-                    //System.out.println("=======================");
-                    //System.out.println("Unlink Accounts:Token client instance is null");
-                    //System.out.println("=======================");
-                    tokenClient = getTokenClient(context);
-                }
-                String memberId = new JSONObject(args.getString(0)).getString("memberId");
-                JSONArray jsonArray =new JSONObject(args.getString(0)).getJSONArray("accounts");
-                List<String> accountList = new ArrayList<>();
-                for (int i=0;i<jsonArray.length();i++){
-                    accountList.add(jsonArray.getString(i));
-                }
-                //System.out.println("accountsd====="+jsonArray);
-                //System.out.println("accountsd====="+accountList);
-                tokenClient.getMemberBlocking(memberId).unlinkAccountsBlocking(accountList);
-                callbackContext.success("true");
-            }catch (Exception e){
-                //e.printStackTrace();
-                callbackContext.error(e.toString());
+    private void unlinkAccounts(JSONArray args,CallbackContext callbackContext){
+        JSONObject jsonObject;
+        try {
+            if(tokenClient == null) {
+                //System.out.println("=======================");
+                //System.out.println("Unlink Accounts:Token client instance is null");
+                //System.out.println("=======================");
+                tokenClient = getTokenClient(context);
             }
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            JSONArray jsonArray =new JSONObject(args.getString(0)).getJSONArray("accounts");
+            List<String> accountList = new ArrayList<>();
+            for (int i=0;i<jsonArray.length();i++){
+                accountList.add(jsonArray.getString(i));
+            }
+            //System.out.println("accountsd====="+jsonArray);
+            //System.out.println("accountsd====="+accountList);
+            tokenClient.getMemberBlocking(memberId).unlinkAccountsBlocking(accountList);
+            callbackContext.success("true");
+        }catch (Exception e){
+            //e.printStackTrace();
+            callbackContext.error(e.toString());
         }
+    }
 
     private void deleteMember(JSONArray args,CallbackContext callbackContext){
         JSONObject jsonObject;
@@ -512,13 +528,13 @@ public class Token extends CordovaPlugin {
             String tokenAccountId = new JSONObject(args.getString(0)).getString("tokenAccountId");
 
             JSONArray jsonArray = new JSONArray();
-             Account accountDetails = tokenClient.getMemberBlocking(memberId).getAccountBlocking(tokenAccountId);
+            Account accountDetails = tokenClient.getMemberBlocking(memberId).getAccountBlocking(tokenAccountId);
             //System.out.println("accounts===="+accountDetails);
-                JSONObject accountObject = new JSONObject();
-                accountObject.put("tokenAccountId",accountDetails.id());
-                accountObject.put("bankAccountNumber",accountDetails.toProto().getAccountDetails().getIdentifier());
-                accountObject.put("name",accountDetails.name());
-                accountObject.put("supportsSendPayment",accountDetails.accountFeatures().getSupportsSendPayment());
+            JSONObject accountObject = new JSONObject();
+            accountObject.put("tokenAccountId",accountDetails.id());
+            accountObject.put("bankAccountNumber",accountDetails.toProto().getAccountDetails().getIdentifier());
+            accountObject.put("name",accountDetails.name());
+            accountObject.put("supportsSendPayment",accountDetails.accountFeatures().getSupportsSendPayment());
             //System.out.println("accountObject===="+accountObject);
             callbackContext.success(jsonArray.toString());
         }
@@ -571,90 +587,90 @@ public class Token extends CordovaPlugin {
 //            TokenProtos.TokenOperationResult replaceToken = member.replaceAccessTokenBlocking(token,builder1);
 
 //            member.endorseTokenBlocking(replaceToken.getToken(), SecurityProtos.Key.Level.STANDARD);
-cordova.getActivity().runOnUiThread(new Runnable() {
-    @Override
-    public void run() {
-        tokenClient.getMember(memberId)
-                .subscribe(new Consumer<Member>() {
-                    @Override
-                    public void accept(final Member member) throws Exception {
-                        member.getActiveAccessToken(tppMemberId)
-                                .subscribe(new Consumer<TokenProtos.Token>() {
-                                    @Override
-                                    public void accept(TokenProtos.Token token) throws Exception {
-                                        //System.out.println("token pay---->" + token);
-                                        //System.out.println("token pay---->" + token.getPayload());
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tokenClient.getMember(memberId)
+                            .subscribe(new Consumer<Member>() {
+                                @Override
+                                public void accept(final Member member) throws Exception {
+                                    member.getActiveAccessToken(tppMemberId)
+                                            .subscribe(new Consumer<TokenProtos.Token>() {
+                                                @Override
+                                                public void accept(TokenProtos.Token token) throws Exception {
+                                                    //System.out.println("token pay---->" + token);
+                                                    //System.out.println("token pay---->" + token.getPayload());
 
-                                        member.replaceAccessToken(token, builder1)
-                                                .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
-                                                    @Override
-                                                    public void accept(TokenProtos.TokenOperationResult replaceToken) throws Exception {
-                                                        //System.out.println("Replace token" + replaceToken.getToken());
-                                                        member.endorseToken(replaceToken.getToken(), SecurityProtos.Key.Level.STANDARD)
-                                                                .flatMap(new Function<TokenProtos.TokenOperationResult, ObservableSource<?>>() {
-                                                                    @Override
-                                                                    public ObservableSource<?> apply(TokenProtos.TokenOperationResult tokenOperationalResult) throws Exception {
-                                                                        return member.signTokenRequestState(content.getTokenRequest().getId(),
-                                                                                tokenOperationalResult.getToken().getId(),
-                                                                                content.getTokenRequest().getRequestPayload().getCallbackState());
-                                                                    }
-                                                                }).subscribe(new Consumer<Object>() {
-                                                                                 @Override
-                                                                                 public void accept(Object ignore) throws Exception {
-                                                                                     callbackContext.success("true");
+                                                    member.replaceAccessToken(token, builder1)
+                                                            .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
+                                                                @Override
+                                                                public void accept(TokenProtos.TokenOperationResult replaceToken) throws Exception {
+                                                                    //System.out.println("Replace token" + replaceToken.getToken());
+                                                                    member.endorseToken(replaceToken.getToken(), SecurityProtos.Key.Level.STANDARD)
+                                                                            .flatMap(new Function<TokenProtos.TokenOperationResult, ObservableSource<?>>() {
+                                                                                @Override
+                                                                                public ObservableSource<?> apply(TokenProtos.TokenOperationResult tokenOperationalResult) throws Exception {
+                                                                                    return member.signTokenRequestState(content.getTokenRequest().getId(),
+                                                                                            tokenOperationalResult.getToken().getId(),
+                                                                                            content.getTokenRequest().getRequestPayload().getCallbackState());
+                                                                                }
+                                                                            }).subscribe(new Consumer<Object>() {
+                                                                                             @Override
+                                                                                             public void accept(Object ignore) throws Exception {
+                                                                                                 callbackContext.success("true");
 
-                                                                                 }
-                                                                             }
-                                                        ).dispose();
-                                                    }
-                                                }, new Consumer<Throwable>() {
-                                                    @Override
-                                                    public void accept(Throwable onError) throws Exception {
-                                                        //System.out.println("Error while replace access token----" + onError);
-                                                        //System.out.println("Error while replace access token----" + onError.getMessage());
-                                                        callbackContext.error(onError.toString());
-                                                    }
-                                                });
-                                    }
-                                }, new Consumer<Throwable>() {
-                                    @Override
-                                    public void accept(Throwable onError) throws Exception {
-                                        member.createAccessToken(builder1)
-                                                .subscribe(new Consumer<TokenProtos.Token>() {
-                                                    @Override
-                                                    public void accept(TokenProtos.Token token) throws Exception {
-                                                        //System.out.println("");
-                                                        member.endorseToken(token, SecurityProtos.Key.Level.STANDARD)
-                                                                .flatMap(new Function<TokenProtos.TokenOperationResult, ObservableSource<?>>() {
-                                                                    @Override
-                                                                    public ObservableSource<?> apply(TokenProtos.TokenOperationResult tokenOperationalResult) throws Exception {
-                                                                        return member.signTokenRequestState(
-                                                                                content.getTokenRequest().getId(),
-                                                                                tokenOperationalResult.getToken().getId(),
-                                                                                content.getTokenRequest().getRequestPayload().getCallbackState());
-                                                                    }
-                                                                })
-                                                                .subscribe(new Consumer<Object>() {
-                                                                    @Override
-                                                                    public void accept(Object ignore) throws Exception {
-                                                                        //System.out.println("Ignore----" + ignore);
-                                                                        callbackContext.success("true");
-                                                                    }
-                                                                }, new Consumer<Throwable>() {
-                                                                    @Override
-                                                                    public void accept(Throwable onError) throws Exception {
-                                                                        //System.out.println("Error" + onError.getMessage());
-                                                                        callbackContext.error(onError.toString());
-                                                                    }
-                                                                });
-                                                    }
-                                                });
-                                    }
-                                });
-                    }
-                });
-    }
-    });
+                                                                                             }
+                                                                                         }
+                                                                    ).dispose();
+                                                                }
+                                                            }, new Consumer<Throwable>() {
+                                                                @Override
+                                                                public void accept(Throwable onError) throws Exception {
+                                                                    //System.out.println("Error while replace access token----" + onError);
+                                                                    //System.out.println("Error while replace access token----" + onError.getMessage());
+                                                                    callbackContext.error(onError.toString());
+                                                                }
+                                                            });
+                                                }
+                                            }, new Consumer<Throwable>() {
+                                                @Override
+                                                public void accept(Throwable onError) throws Exception {
+                                                    member.createAccessToken(builder1)
+                                                            .subscribe(new Consumer<TokenProtos.Token>() {
+                                                                @Override
+                                                                public void accept(TokenProtos.Token token) throws Exception {
+                                                                    //System.out.println("");
+                                                                    member.endorseToken(token, SecurityProtos.Key.Level.STANDARD)
+                                                                            .flatMap(new Function<TokenProtos.TokenOperationResult, ObservableSource<?>>() {
+                                                                                @Override
+                                                                                public ObservableSource<?> apply(TokenProtos.TokenOperationResult tokenOperationalResult) throws Exception {
+                                                                                    return member.signTokenRequestState(
+                                                                                            content.getTokenRequest().getId(),
+                                                                                            tokenOperationalResult.getToken().getId(),
+                                                                                            content.getTokenRequest().getRequestPayload().getCallbackState());
+                                                                                }
+                                                                            })
+                                                                            .subscribe(new Consumer<Object>() {
+                                                                                @Override
+                                                                                public void accept(Object ignore) throws Exception {
+                                                                                    //System.out.println("Ignore----" + ignore);
+                                                                                    callbackContext.success("true");
+                                                                                }
+                                                                            }, new Consumer<Throwable>() {
+                                                                                @Override
+                                                                                public void accept(Throwable onError) throws Exception {
+                                                                                    //System.out.println("Error" + onError.getMessage());
+                                                                                    callbackContext.error(onError.toString());
+                                                                                }
+                                                                            });
+                                                                }
+                                                            });
+                                                }
+                                            });
+                                }
+                            });
+                }
+            });
             callbackContext.success("true");
         } catch (Exception e){
             //e.printStackTrace();
@@ -664,24 +680,24 @@ cordova.getActivity().runOnUiThread(new Runnable() {
 
     private void cancelAccessToken(JSONArray args,CallbackContext callbackContext) {
 
-            JSONObject jsonObject;
-            try {
-                if(tokenClient == null) {
-                    //System.out.println("=======================");
-                    //System.out.println("getAccounts:Token client instance is null");
-                    //System.out.println("=======================");
-                    tokenClient = getTokenClient(context);
-                }
-                String memberId = new JSONObject(args.getString(0)).getString("memberId");
-                String tppMemberId = new JSONObject(args.getString(0)).getString("tppMemberId");
+        JSONObject jsonObject;
+        try {
+            if(tokenClient == null) {
+                //System.out.println("=======================");
+                //System.out.println("getAccounts:Token client instance is null");
+                //System.out.println("=======================");
+                tokenClient = getTokenClient(context);
+            }
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            String tppMemberId = new JSONObject(args.getString(0)).getString("tppMemberId");
 
-                Member member =tokenClient.getMemberBlocking(memberId);
-                TokenProtos.Token token = member.getActiveAccessTokenBlocking(tppMemberId);
-                member.cancelTokenBlocking(token);
+            Member member =tokenClient.getMemberBlocking(memberId);
+            TokenProtos.Token token = member.getActiveAccessTokenBlocking(tppMemberId);
+            member.cancelTokenBlocking(token);
 
-                callbackContext.success("true");
+            callbackContext.success("true");
         }catch (Exception e){
-                //e.printStackTrace();
+            //e.printStackTrace();
             callbackContext.error(e.toString());
         }
     }
@@ -716,44 +732,44 @@ cordova.getActivity().runOnUiThread(new Runnable() {
             cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                                tokenClient.getMember(memberId)
-                                        .subscribe(new Consumer<Member>() {
-                                            @Override
-                                            public void accept(final Member member) throws Exception {
-                                                member.createTransferToken(content.getTokenRequest())
-                                                        .setAccountId(account)
-                                                        .execute()
-                                                        .subscribe(new Consumer<TokenProtos.Token>() {
-                                                            @Override
-                                                            public void accept(TokenProtos.Token token) throws Exception {
-                                                                member.endorseToken(token, SecurityProtos.Key.Level.STANDARD)
-                                                                        .flatMap(new Function<TokenProtos.TokenOperationResult, ObservableSource<?>>() {
-                                                                            @Override
-                                                                            public ObservableSource<?> apply(TokenProtos.TokenOperationResult tokenOperationalResult) throws Exception {
-                                                                                return member.signTokenRequestState(
-                                                                                        content.getTokenRequest().getId(),
-                                                                                        tokenOperationalResult.getToken().getId(),
-                                                                                        content.getTokenRequest().getRequestPayload().getCallbackState());
-                                                                            }
-                                                                        })
-                                                                        .subscribe(new Consumer<Object>() {
-                                                                            @Override
-                                                                            public void accept(Object ignore) throws Exception {
-                                                                                //System.out.println("Ignore----" + ignore);
-                                                                                callbackContext.success("true");
-                                                                            }
+                    tokenClient.getMember(memberId)
+                            .subscribe(new Consumer<Member>() {
+                                @Override
+                                public void accept(final Member member) throws Exception {
+                                    member.createTransferToken(content.getTokenRequest())
+                                            .setAccountId(account)
+                                            .execute()
+                                            .subscribe(new Consumer<TokenProtos.Token>() {
+                                                @Override
+                                                public void accept(TokenProtos.Token token) throws Exception {
+                                                    member.endorseToken(token, SecurityProtos.Key.Level.STANDARD)
+                                                            .flatMap(new Function<TokenProtos.TokenOperationResult, ObservableSource<?>>() {
+                                                                @Override
+                                                                public ObservableSource<?> apply(TokenProtos.TokenOperationResult tokenOperationalResult) throws Exception {
+                                                                    return member.signTokenRequestState(
+                                                                            content.getTokenRequest().getId(),
+                                                                            tokenOperationalResult.getToken().getId(),
+                                                                            content.getTokenRequest().getRequestPayload().getCallbackState());
+                                                                }
+                                                            })
+                                                            .subscribe(new Consumer<Object>() {
+                                                                @Override
+                                                                public void accept(Object ignore) throws Exception {
+                                                                    //System.out.println("Ignore----" + ignore);
+                                                                    callbackContext.success("true");
+                                                                }
 
-                                                                        }, new Consumer<Throwable>() {
-                                                                            @Override
-                                                                            public void accept(Throwable onError) throws Exception {
-                                                                                //System.out.println("Error" + onError.getMessage());
-                                                                                callbackContext.error(onError.toString());
-                                                                            }
-                                                                        });
-                                                            }
-                                                        });
-                                            }
-                                        });
+                                                            }, new Consumer<Throwable>() {
+                                                                @Override
+                                                                public void accept(Throwable onError) throws Exception {
+                                                                    //System.out.println("Error" + onError.getMessage());
+                                                                    callbackContext.error(onError.toString());
+                                                                }
+                                                            });
+                                                }
+                                            });
+                                }
+                            });
                 }
             });
         } catch (Exception e){
@@ -795,10 +811,10 @@ cordova.getActivity().runOnUiThread(new Runnable() {
             MemberProtos.MemberRecoveryOperation mro1 = (MemberProtos.MemberRecoveryOperation) message;
 
             Member recoveredMember = tokenClient.completeRecoveryBlocking(
-                        memberId,
-                        Arrays.asList(mro1),
-                        privilegedKey,
-                        cryptoEngine);
+                    memberId,
+                    Arrays.asList(mro1),
+                    privilegedKey,
+                    cryptoEngine);
             //System.out.println("recovered member==="+recoveredMember.memberId());
             callbackContext.success(recoveredMember.memberId());
 
@@ -882,9 +898,9 @@ cordova.getActivity().runOnUiThread(new Runnable() {
                     });
 
 //            callbackContext.success("true");
-            }catch (Exception e){
-                //e.printStackTrace();
-                callbackContext.error(e.toString());
-            }
+        }catch (Exception e){
+            //e.printStackTrace();
+            callbackContext.error(e.toString());
         }
+    }
 }
