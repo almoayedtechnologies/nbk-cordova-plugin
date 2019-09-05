@@ -243,7 +243,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -298,12 +298,12 @@ class token: CDVPlugin {
                 dispatchGrp.leave()
             }, onError: { Error in
                 print("error during fetching linked accounts ", Error)
-                error = Error.localizedDescription
+                error = Error as! String
                 dispatchGrp.leave()
             })
         }, onError: { Error in
             print("member lookup error during fetching linked accounts ", Error)
-            error = Error.localizedDescription
+            error = Error as! String
             dispatchGrp.leave()
         })
         
@@ -683,7 +683,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -733,7 +733,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -792,7 +792,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -902,7 +902,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -979,7 +979,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -1140,7 +1140,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -1199,7 +1199,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs: status
+                    messageAs: "true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
@@ -1291,7 +1291,7 @@ class token: CDVPlugin {
             if status == true {
                 pluginResult = CDVPluginResult(
                     status: CDVCommandStatus_OK,
-                    messageAs:memberId
+                    messageAs:"true"
                 )
             } else {
                 pluginResult = CDVPluginResult(
