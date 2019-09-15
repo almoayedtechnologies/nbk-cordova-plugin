@@ -32,11 +32,12 @@ android {
     }
    
 }
-
+allprojects {
 repositories {
         google()
         jcenter()
         maven { url 'https://token.jfrog.io/token/libs-release' }
+}
 }
 
 
