@@ -20,7 +20,7 @@
 			</feature>
 		</config-file>
 		 <framework custom="true" src="src/android/tokenbuild.gradle" type="gradleReference" />
-		 <framework src="com.android.support:appcompat-v7:24.1.1+"/>
+		 <framework src="com.android.support:appcompat-v7:+"/>
 		<source-file src="src/android/Token.java" target-dir="src/com/at/token/Token" />
 		<source-file src="src/android/io/token/rpc/client/Channels.java" target-dir="src/io/token/rpc/client/" />
 		<source-file src="src/android/io/token/rpc/client/ContextInterceptor.java" target-dir="src/io/token/rpc/client/" />
