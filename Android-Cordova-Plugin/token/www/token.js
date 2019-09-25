@@ -80,3 +80,14 @@ exports.resolveAlias = function (arg0, success, error) {
     exec(success, error, 'token', 'resolveAlias', [arg0]);
 };
 
+exports.unlinkDevices = function (arg0, success, error) {
+    exec(success, error, 'token', 'unlinkDevices', [arg0]);
+};
+
+exports.declineNotification = function (arg0, success, error) {
+    exec(success, error, 'token', 'declineNotification', [arg0]);
+};
+
+exports.notificationStatus = function (arg0, success, error) {
+    exec(success, error, 'token', 'notificationStatus', [arg0]);
+};
