@@ -156,6 +156,15 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("resolveAlias")){
             this.resolveAlias(args,callbackContext);
             return true;
+        } else if(action.equals("unlinkDevices")){
+            this.unlinkDevices(args,callbackContext);
+            return true;
+        } else if(action.equals("declineNotification")){
+            this.declineNotification(args,callbackContext);
+            return true;
+        } else if(action.equals("notificationStatus")){
+            this.notificationStatus(args,callbackContext);
+            return true;
         }
 
         return false;
@@ -903,4 +912,55 @@ public class Token extends CordovaPlugin {
             callbackContext.error(e.toString());
         }
     }
+    
+      private void unlinkDevices(JSONArray args,CallbackContext callbackContext){
+        JSONObject jsonObject;
+        try {
+            if(tokenClient == null) {
+                tokenClient = getTokenClient(context);
+            }
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            Member member = tokenClient.getMemberBlocking(memberId);
+            member.removeNonStoredKeysBlocking();
+            callbackContext.success("true");
+        }
+        catch (Exception e){
+            callbackContext.error(e.toString());
+        }
+    } 
+    
+       private void declineNotification(JSONArray args,CallbackContext callbackContext){
+        JSONObject jsonObject;
+        try {
+            if(tokenClient == null) {
+                tokenClient = getTokenClient(context);
+            }
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            String notificationId = new JSONObject(args.getString(0)).getString("notificationId");
+            Member member = tokenClient.getMemberBlocking(memberId);
+            member.updateNotificationStatusBlocking(notificationId, NotificationProtos.Notification.Status.DECLINED);
+            callbackContext.success("true");
+        }
+        catch (Exception e){
+            callbackContext.error(e.toString());
+        }
+    }
+    
+       private void notificationStatus(JSONArray args,CallbackContext callbackContext){
+        JSONObject jsonObject;
+        try {
+            if(tokenClient == null) {
+                tokenClient = getTokenClient(context);
+            }
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            String notificationId = new JSONObject(args.getString(0)).getString("notificationId");
+            String notification_status = tokenClient.getMemberBlocking(memberId).getNotificationBlocking(notificationId).getStatus().name();
+            callbackContext.success(notification_status);
+        }
+        catch (Exception e){
+            callbackContext.error(e.toString());
+        }
+    }
+    
+    
 }
