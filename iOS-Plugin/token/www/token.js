@@ -79,3 +79,15 @@ exports.resolveAlias = function (arg0, success, error) {
 exports.checkMember = function (arg0, success, error) {
     exec(success, error, 'token', 'checkMember', [arg0]);
 };
+
+exports.checkMember = function (arg0, success, error) {
+    exec(success, error, 'token', 'unlinkDevices', [arg0]);
+};
+
+exports.checkMember = function (arg0, success, error) {
+    exec(success, error, 'token', 'declineNotification', [arg0]);
+};
+
+exports.checkMember = function (arg0, success, error) {
+    exec(success, error, 'token', 'notificationStatus', [arg0]);
+};
