@@ -275,7 +275,8 @@ public class Token extends CordovaPlugin {
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
             String accessToken = new JSONObject(args.getString(0)).getString("accessToken");
             Member member = tokenClient.getMemberBlocking(memberId);
-            List<Account> accounts = member.linkAccountsBlocking(realm,accessToken);
+//             List<Account> accounts = member.linkAccountsBlocking(realm,accessToken);
+                        List<Account> accounts = member.linkAccountsBlocking("at-ithb",accessToken);
             //System.out.println("accounts====="+accounts);
             callbackContext.success("true");
         }catch (Exception e){
