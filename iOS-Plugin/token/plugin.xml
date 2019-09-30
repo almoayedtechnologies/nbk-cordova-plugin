@@ -8,10 +8,10 @@
     <podspec>
       <config>
         <source url="https://github.com/tokenio/token-cocoa-pods.git" />
-        <source url="https://github.com/CocoaPods/Specs.git"/>
+        <source url="https://github.com/CocoaPods/Specs.git" />
       </config>
       <pods use-frameworks="true">
-        <pod name="TokenSdk" swift-version="5.0"/>
+        <pod name="TokenSdk" swift-version="4.0"/>
       </pods>
     </podspec>
 
