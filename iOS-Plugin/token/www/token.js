@@ -80,14 +80,14 @@ exports.checkMember = function (arg0, success, error) {
     exec(success, error, 'token', 'checkMember', [arg0]);
 };
 
-exports.checkMember = function (arg0, success, error) {
+exports.unlinkDevices = function (arg0, success, error) {
     exec(success, error, 'token', 'unlinkDevices', [arg0]);
 };
 
-exports.checkMember = function (arg0, success, error) {
+exports.declineNotification = function (arg0, success, error) {
     exec(success, error, 'token', 'declineNotification', [arg0]);
 };
 
-exports.checkMember = function (arg0, success, error) {
+exports.notificationStatus = function (arg0, success, error) {
     exec(success, error, 'token', 'notificationStatus', [arg0]);
 };

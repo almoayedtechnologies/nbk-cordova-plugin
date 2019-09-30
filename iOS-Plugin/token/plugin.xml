@@ -11,7 +11,7 @@
         <source url="https://github.com/CocoaPods/Specs.git"/>
       </config>
       <pods use-frameworks="true">
-        <pod name="TokenSdk" />
+        <pod name="TokenSdk" swift-version="5.0"/>
       </pods>
     </podspec>
 
