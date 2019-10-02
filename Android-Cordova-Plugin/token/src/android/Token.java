@@ -138,7 +138,10 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("approveTransferToken")){
             this.approveTransferToken(args,callbackContext);
             return true;
-        } else if(action.equals("memberRecovery")){
+        }  else if(action.equals("onAccoutRevoke")){
+            this.onAccoutRevoke(args,callbackContext);
+            return true;
+        }  else if(action.equals("memberRecovery")){
             this.memberRecovery(args,callbackContext);
             return true;
         } else if(action.equals("getRecoveredMember")){
@@ -963,5 +966,77 @@ public class Token extends CordovaPlugin {
         }
     }
     
+    private void onAccoutRevoke(JSONArray args,CallbackContext callbackContext) {
+        JSONObject jsonObject;
+        try {
+            if (tokenClient == null) {
+                tokenClient = getTokenClient(context);
+            }
+            String memberId = new JSONObject(args.getString(0)).getString("memberId");
+            String tppMemberId = new JSONObject(args.getString(0)).getString("tppMemberId");
+            JSONArray jsonArray = new JSONObject(args.getString(0)).getJSONArray("accounts");
+
+            List<String> accountList = new ArrayList<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                accountList.add(jsonArray.getString(i));
+            }
+
+            cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tokenClient.getMember(memberId)
+                            .subscribe(new Consumer<Member>() {
+                                @Override
+                                public void accept(final Member member1) throws Exception {
+                                    member1.getActiveAccessToken(tppMemberId)
+                                            .subscribe(new Consumer<TokenProtos.Token>() {
+                                                @Override
+                                                public void accept(TokenProtos.Token token) throws Exception {
+                                                    AccessTokenBuilder accessTokenBuilder = AccessTokenBuilder.fromPayload(token.getPayload());
+                                                    for (int i = 0; i < accountList.size(); i++) {
+                                                        accessTokenBuilder.forAccount(accountList.get(i));
+                                                        accessTokenBuilder.forAccountTransactions(accountList.get(i));
+                                                        accessTokenBuilder.forAccountBalances(accountList.get(i));
+                                                    }
+                                                    member1.replaceAccessToken(token, accessTokenBuilder)
+                                                            .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
+                                                                @Override
+                                                                public void accept(TokenProtos.TokenOperationResult replaceToken) throws Exception {
+                                                                    member1.endorseToken(replaceToken.getToken(), SecurityProtos.Key.Level.STANDARD)
+                                                                            .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
+                                                                                @Override
+                                                                                public void accept(TokenProtos.TokenOperationResult replacedToken) throws Exception {
+                                                                                    callbackContext.success("true");
+                                                                                }
+                                                                            }, new Consumer<Throwable>() {
+                                                                                @Override
+                                                                                public void accept(Throwable onError) throws Exception {
+                                                                                    callbackContext.error(onError.getMessage());
+                                                                                }
+                                                                            });
+                                                                }
+                                                            }, new Consumer<Throwable>() {
+                                                                @Override
+                                                                public void accept(Throwable onError) throws Exception {
+                                                                    callbackContext.error(onError.getMessage());
+
+                                                                }
+                                                            }, new Action() {
+                                                                @Override
+                                                                public void run() throws Exception {
+                                                                }
+                                                            });
+                                                }
+                                            });
+                                }
+                            });
+                }
+            });
+        } catch (Exception e){
+            //e.printStackTrace();
+            callbackContext.error(e.toString());
+        }
+    }
+
     
 }
