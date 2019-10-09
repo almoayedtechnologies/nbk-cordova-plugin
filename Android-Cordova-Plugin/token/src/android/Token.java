@@ -787,7 +787,7 @@ public class Token extends CordovaPlugin {
             });
         } catch (Exception e){
             //e.printStackTrace();
-            callbackContext.error(e.toString());
+            callbackContext.error(e.getMessage().toString());
         }
     }
 
