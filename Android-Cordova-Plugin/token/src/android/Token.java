@@ -634,7 +634,7 @@ public class Token extends CordovaPlugin {
 
                                                                                              }
                                                                                          }
-                                                                    ).dispose();
+                                                                    );
                                                                 }
                                                             }, new Consumer<Throwable>() {
                                                                 @Override
