@@ -83,7 +83,8 @@ public class Token extends CordovaPlugin {
     NotificationProtos.AddKey addkey;
     public static final String developerKey = "4qY7lqQw8NOl9gng0ZHgT4xdiDqxqoGVutuZwrUYQsI";
     public static final String realm = "at-nbkb";
-
+    public NotificationProtos.CreateAndEndorseToken content;
+    public NotificationProtos.CreateAndEndorseToken.Builder builder;
     public String recoveryAgent;
     //    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.CUSTOM;
     public AliasProtos.Alias.Type type_user;
@@ -729,8 +730,7 @@ public class Token extends CordovaPlugin {
 //            String tppMemberId = new JSONObject(args.getString(0)).getString("tppMemberId");
             String payload = new JSONObject(args.getString(0)).getString("payload");
             String account = new JSONObject(args.getString(0)).getString("account");
-            NotificationProtos.CreateAndEndorseToken content;
-            NotificationProtos.CreateAndEndorseToken.Builder builder;
+            
 
 //            JSONObject jsonObject2 = new JSONObject(payload);
             //System.out.println("json object in per"+jsonObject2);
