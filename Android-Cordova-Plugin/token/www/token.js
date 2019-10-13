@@ -72,8 +72,8 @@ exports.approveProvision = function (arg0, success, error) {
     exec(success, error, 'token', 'approveProvision', [arg0]);
 };
 
-exports.checkMember = function (arg0, success, error) {
-    exec(success, error, 'token', 'checkMember', [arg0]);
+exports.getMember = function (arg0, success, error) {
+    exec(success, error, 'token', 'getMember', [arg0]);
 };
 
 exports.resolveAlias = function (arg0, success, error) {
