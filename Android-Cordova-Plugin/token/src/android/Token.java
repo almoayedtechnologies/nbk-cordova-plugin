@@ -154,10 +154,7 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("approveProvision")){
             this.approveProvision(args,callbackContext);
             return true;
-        } else if(action.equals("checkMember")){
-            this.checkMember(args,callbackContext);
-            return true;
-        } else if(action.equals("resolveAlias")){
+        }  else if(action.equals("resolveAlias")){
             this.resolveAlias(args,callbackContext);
             return true;
         } else if(action.equals("unlinkDevices")){
