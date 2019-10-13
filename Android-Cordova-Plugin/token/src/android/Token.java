@@ -169,6 +169,9 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("notificationStatus")){
             this.notificationStatus(args,callbackContext);
             return true;
+        }  else if(action.equals("getMember")){
+            this.getMember(args,callbackContext);
+            return true;
         }
 
         return false;
@@ -289,7 +292,7 @@ public class Token extends CordovaPlugin {
         }
     }
 
-    private void checkMember(JSONArray args,CallbackContext callbackContext){
+    private void getMember(JSONArray args,CallbackContext callbackContext){
         try{
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
             tokenClient = getTokenClient(context);
