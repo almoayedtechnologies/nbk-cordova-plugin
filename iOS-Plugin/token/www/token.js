@@ -91,3 +91,7 @@ exports.declineNotification = function (arg0, success, error) {
 exports.notificationStatus = function (arg0, success, error) {
     exec(success, error, 'token', 'notificationStatus', [arg0]);
 };
+
+exports.onAccountRevoke = function (arg0, success, error) {
+    exec(success, error, 'token', 'onAccountRevoke', [arg0]);
+};

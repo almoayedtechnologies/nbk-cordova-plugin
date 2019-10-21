@@ -1228,9 +1228,17 @@ class token: CDVPlugin {
         var memberId = String()
         
         getTokenClient().getMemberId(makeAliasObject(value: aliasValue, type: aliasType), onSuccess: { member in
+            if(member == nil)
+            {
+             status = true
+             memberId = ""
+             dispatchGrp.leave()
+            }
+            else{
             status = true
             memberId = member!
             dispatchGrp.leave()
+            }
         }, onError: { Error in
             print("error during onAccountRevoke membercheck", Error)
             error = Error.localizedDescription
@@ -1261,8 +1269,8 @@ class token: CDVPlugin {
         
     }
     
-    @objc(checkMember:)
-    func checkMember(argDict: CDVInvokedUrlCommand){
+    @objc(getMember:)
+    func getMember(argDict: CDVInvokedUrlCommand){
         
         // common vars
         var (status, error, pluginResult, dispatchGrp) = makeCommonVars()
@@ -1459,6 +1467,85 @@ class token: CDVPlugin {
         
         
     }
+    
+    @objc(onAccountRevoke:)
+    func onAccountRevoke(argDict: CDVInvokedUrlCommand){
+        
+        // common vars
+        var (status, error, pluginResult, dispatchGrp) = makeCommonVars()
+        dispatchGrp.enter()
+        
+        // read from args
+        var args = argDict.arguments![0] as! [String: Any]
+        print("received dict arguments", args)
+        let memberId: String = args["memberId"] as! String
+        var accountsTorevoke: [String] = args["accounts"] as! [String]
+        let ttpMemberId: String = args["ttpMemberId"] as! String
+        let resources : AccessBody_Resource
+        
+        
+        getTokenClient().getMember(memberId, onSuccess: { member in
+            member.getActiveAccessToken(ttpMemberId, onSuccess:{token in
+                
+                let builder = AccessTokenBuilder.fromPayload(token.payload)
+                accountsTorevoke.forEach{ accountId in
+                    builder!.forAccount(accountId)
+                    builder!.forAccountBalances(accountId)
+                    builder!.forAccountTransactions(accountId)
+                }
+                
+                member.replaceAccessToken(token, accessTokenBuilder: builder!, onSuccess: { TokenOperationResult in
+                    member.endorseToken(TokenOperationResult.token, withKey: Key_Level.standard, onSuccess: { result in
+                        
+                        status = true
+                        dispatchGrp.leave()
+                        
+                    }, onError:{ Error in
+                        print("error during onAccountRevoke", Error)
+                        error = Error.localizedDescription
+                        dispatchGrp.leave()
+                    })
+                }, onError: { Error in
+                    print("error during onAccountRevoke", Error)
+                    error = Error.localizedDescription
+                    dispatchGrp.leave()
+                    
+                })
+            }, onError:{ Error in
+                print("error during onAccountRevoke", Error)
+                error = Error.localizedDescription
+                dispatchGrp.leave()
+            })
+        }, onError: { Error in
+            print("error during onAccountRevoke membercheck", Error)
+            error = Error.localizedDescription
+            dispatchGrp.leave()
+            
+        })
+        
+        // wait for async and notify main
+        dispatchGrp.notify(queue: .main) {
+            print("main notified by onAccountRevoke: ", status)
+            if status == true {
+                pluginResult = CDVPluginResult(
+                    status: CDVCommandStatus_OK,
+                    messageAs: status
+                )
+            } else {
+                pluginResult = CDVPluginResult(
+                    status: CDVCommandStatus_ERROR,
+                    messageAs: error
+                )
+            }
+            self.commandDelegate!.send(
+                pluginResult,
+                callbackId: argDict.callbackId
+            )
+        }
+        
+        
+    }
+    
     
 }
 
