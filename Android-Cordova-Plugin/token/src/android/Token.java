@@ -82,7 +82,8 @@ public class Token extends CordovaPlugin {
     MemberProtos.MemberRecoveryOperation.Authorization authorization;
     NotificationProtos.AddKey addkey;
     public static final String developerKey = "4qY7lqQw8NOl9gng0ZHgT4xdiDqxqoGVutuZwrUYQsI";
-    public static final String realm = "at-nbkb";
+//     public static final String realm = "at-nbkb";
+    public static final String realm = "at-amex";
     public NotificationProtos.CreateAndEndorseToken content;
     public NotificationProtos.CreateAndEndorseToken.Builder builder;
     public String recoveryAgent;
