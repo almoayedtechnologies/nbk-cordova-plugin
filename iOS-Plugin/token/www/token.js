@@ -76,8 +76,8 @@ exports.resolveAlias = function (arg0, success, error) {
     exec(success, error, 'token', 'resolveAlias', [arg0]);
 };
 
-exports.checkMember = function (arg0, success, error) {
-    exec(success, error, 'token', 'checkMember', [arg0]);
+exports.getMember = function (arg0, success, error) {
+    exec(success, error, 'token', 'getMember', [arg0]);
 };
 
 exports.unlinkDevices = function (arg0, success, error) {
