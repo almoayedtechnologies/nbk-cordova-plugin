@@ -74,17 +74,7 @@ class token: CDVPlugin {
         alias.realm = token.realm
         return alias
     }
-    
-    // get bank memberId
-//    func getRecoveryAgentId() -> String {
-//        var recoveryAgentMemberId = String()
-//        getTokenClient().getMemberId(makeRecoverAliasObject(), onSuccess: { memberId in
-//            recoveryAgentMemberId = memberId!
-//        }) { (Error) in
-//
-//        }
-//        return recoveryAgentMemberId
-//    }
+   
     
     // make common vars
     func makeCommonVars() -> (Bool, String, CDVPluginResult, DispatchGroup) {
@@ -817,11 +807,11 @@ class token: CDVPlugin {
         var args = argDict.arguments![0] as! [String: Any]
         print("received dict arguments", args)
         let memberId: String = args["memberId"] as! String
-        let payload =  args["payload"] as! String
+        let payload =  args["payload"] as! [AnyHashable:Any]
         let approvedAccounts: [String] = args["accounts"] as! [String]
         let ttpMemberId: String = args["ttpMemberId"] as! String
         
-        let resultfromToken = TKJson.deserializeMessage(of: CreateAndEndorseToken.self, fromJSON: payload) as! CreateAndEndorseToken
+        let resultfromToken = TKJson.deserializeMessage(of: CreateAndEndorseToken.self, from: payload) as! CreateAndEndorseToken
         print("resultfromToken::", resultfromToken)
         
         let builder = AccessTokenBuilder(tokenRequest: resultfromToken.tokenRequest)
@@ -928,11 +918,11 @@ class token: CDVPlugin {
         var args = argDict.arguments![0] as! [String: Any]
         print("received dict arguments", args)
         let memberId: String = args["memberId"] as! String
-        let payload = args["payload"]  as! String
+        let payload = args["payload"]  as! [AnyHashable:Any]
         let debitAccount: String = args["account"] as! String
         let ttpMemberId: String = args["ttpMemberId"] as! String
         
-        let resultfromToken = TKJson.deserializeMessage(of: CreateAndEndorseToken.self, fromJSON: payload) as! CreateAndEndorseToken
+        let resultfromToken = TKJson.deserializeMessage(of: CreateAndEndorseToken.self, from: payload) as! CreateAndEndorseToken
         print("resultfromToken:", resultfromToken)
         
         getTokenClient().getMember(memberId, onSuccess: { member in
@@ -1167,9 +1157,9 @@ class token: CDVPlugin {
         var aliasType: String = args["aliasType"] as! String
         var aliasValue: String = args["aliasValue"] as! String
         let memberId: String = args["memberId"] as! String
-        let payload = args["payload"] as! String
+        let payload = args["payload"] as! [AnyHashable:Any]
         
-        let resultfromToken = TKJson.deserializeMessage(of: AddKey.self, fromJSON:payload) as! AddKey
+        let resultfromToken = TKJson.deserializeMessage(of: AddKey.self, from:payload) as! AddKey
         
         getTokenClient().getMember(memberId, onSuccess: { member in
             
