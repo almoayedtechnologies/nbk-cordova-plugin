@@ -696,7 +696,6 @@ class token: CDVPlugin {
         
         // read from args
         var args = argDict.arguments![0] as! [String: Any]
-        print("received dict arguments", args)
         var memberId: String = args["memberId"] as! String
         
         getTokenClient().getMember(memberId, onSuccess: { member in
