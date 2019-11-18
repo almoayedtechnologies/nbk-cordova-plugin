@@ -1010,7 +1010,9 @@ public class Token extends CordovaPlugin {
                                                     AccessTokenBuilder accessTokenBuilder = AccessTokenBuilder.fromPayload(token.getPayload());
                                                     for (int i = 0; i < jsonArray.length(); i++) {
                                                         JSONObject jsonobject = jsonArray.getJSONObject(i);
+                                                        if(jsonobject.getString("hasTransaction") == "true" || jsonobject.getString("hasBalance") == "true"){
                                                         accessTokenBuilder.forAccount(jsonobject.getString("accountId"));
+                                                        }
                                                         if(jsonobject.getString("hasTransaction") == "true"){
                                                         accessTokenBuilder.forAccountTransactions(jsonobject.getString("accountId"));
                                                         }
