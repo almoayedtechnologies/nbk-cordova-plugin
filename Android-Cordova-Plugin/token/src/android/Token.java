@@ -459,10 +459,24 @@ public class Token extends CordovaPlugin {
                 //System.out.println("list size----------------" + list.size());
                 JSONArray jsonArray1 = new JSONArray();
                 for (int j = 0; j < list.size(); j++) {
+                    JSONObject jsonObject1 = new JSONObject();
                     String accountId = consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId();
 
                     if (!accountId.isEmpty()) {
-                        jsonArray1.put(consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
+                        jsonObject1.put("accountId",consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
+                        if (consentList.get(i).getPayload().getAccess().getResources(j).getBalance().getAccountId().isEmpty()){
+                            jsonObject1.put("hasBalance","false");
+                        }
+                        else {
+                            jsonObject1.put("hasBalance", consentList.get(i).getPayload().getAccess().getResources(j).getBalance().getAccountId());
+                        }
+                        if (consentList.get(i).getPayload().getAccess().getResources(j).getTransactions().getAccountId().isEmpty()){
+                            jsonObject1.put("hasTransactions","false");
+                        }else {
+                            jsonObject1.put("hasTransactions", consentList.get(i).getPayload().getAccess().getResources(j).getTransactions().getAccountId());
+                        }
+//                        jsonArray1.put(consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
+                        jsonArray1.put(jsonObject1);
                     } else {
                         //System.out.println("Entered null for account id");
                     }
@@ -977,10 +991,10 @@ public class Token extends CordovaPlugin {
             String tppMemberId = new JSONObject(args.getString(0)).getString("tppMemberId");
             JSONArray jsonArray = new JSONObject(args.getString(0)).getJSONArray("accounts");
 
-            List<String> accountList = new ArrayList<>();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                accountList.add(jsonArray.getString(i));
-            }
+//             List<String> accountList = new ArrayList<>();
+//             for (int i = 0; i < jsonArray.length(); i++) {
+//                 accountList.add(jsonArray.getString(i));
+//             }
 
             cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -994,10 +1008,15 @@ public class Token extends CordovaPlugin {
                                                 @Override
                                                 public void accept(TokenProtos.Token token) throws Exception {
                                                     AccessTokenBuilder accessTokenBuilder = AccessTokenBuilder.fromPayload(token.getPayload());
-                                                    for (int i = 0; i < accountList.size(); i++) {
-                                                        accessTokenBuilder.forAccount(accountList.get(i));
-                                                        accessTokenBuilder.forAccountTransactions(accountList.get(i));
-                                                        accessTokenBuilder.forAccountBalances(accountList.get(i));
+                                                    for (int i = 0; i < jsonArray.length(); i++) {
+                                                        JSONObject jsonobject = jsonArray.getJSONObject(i);
+                                                        accessTokenBuilder.forAccount(jsonobject.getString("accountId"));
+                                                        if(jsonobject.getString("hasTransaction") == "true"){
+                                                        accessTokenBuilder.forAccountTransactions(jsonobject.getString("accountId"));
+                                                        }
+                                                        if(jsonobject.getString("hasBalance") == "true"){
+                                                        accessTokenBuilder.forAccountBalances(jsonobject.getString("accountId"));
+                                                        }
                                                     }
                                                     member1.replaceAccessToken(token, accessTokenBuilder)
                                                             .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
