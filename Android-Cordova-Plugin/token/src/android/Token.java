@@ -140,8 +140,8 @@ public class Token extends CordovaPlugin {
         } else if(action.equals("approveTransferToken")){
             this.approveTransferToken(args,callbackContext);
             return true;
-        }  else if(action.equals("onAccoutRevoke")){
-            this.onAccoutRevoke(args,callbackContext);
+        }  else if(action.equals("onAccountRevoke")){
+            this.onAccountRevoke(args,callbackContext);
             return true;
         }  else if(action.equals("memberRecovery")){
             this.memberRecovery(args,callbackContext);
@@ -981,7 +981,7 @@ public class Token extends CordovaPlugin {
         }
     }
     
-    private void onAccoutRevoke(JSONArray args,CallbackContext callbackContext) {
+    private void onAccountRevoke(JSONArray args,CallbackContext callbackContext) {
         JSONObject jsonObject;
         try {
             if (tokenClient == null) {
