@@ -440,6 +440,9 @@ public class Token extends CordovaPlugin {
 
     private void getConsents(JSONArray args,CallbackContext callbackContext){
         JSONObject jsonObject;
+        List accountIdList;
+        List balIdList;
+        List tranIdList;
         try {
             if(tokenClient == null) {
                 //System.out.println("=======================");
@@ -450,40 +453,90 @@ public class Token extends CordovaPlugin {
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
 
             JSONArray jsonArray = new JSONArray();
+            JSONArray newAccountJson = new JSONArray();
+
             List<TokenProtos.Token> consentList = tokenClient.getMemberBlocking(memberId).getAccessTokensBlocking(null,20).getList();
             //System.out.println("accounts===="+consentList);
             for (int i=0;i<consentList.size();i++){
-                JSONObject accountObject = new JSONObject();
+                                                    accountIdList = new ArrayList();
+                                                    balIdList = new ArrayList();
+                                                    tranIdList = new ArrayList();
+                List<TokenProtos.AccessBody.Resource> resources = tppList.getList().get(i).getPayload().getAccess().getResourcesList();
+                                                    JSONArray jsonArray = new JSONArray();
+                                                    accountIdList = new ArrayList();
+                                                    for (TokenProtos.AccessBody.Resource resource : resources) {
+                                                        JSONObject jsonObject = new JSONObject();
+                                                        switch (resource.getResourceCase()) {
+                                                            case ACCOUNT: resource.getAccount().getAccountId();
+                                                            if(!resource.getAccount().getAccountId().isEmpty()){
+//                                                                jsonObject.put("accountId",resource.getAccount().getAccountId());
+                                                                accountIdList.add(resource.getAccount().getAccountId());
+                                                            }
+                                                            System.out.println("accountId=="+resource.getAccount().getAccountId());
+                                                            case BALANCE: resource.getBalance().getAccountId(); // non-empty
+                                                                if(!resource.getBalance().getAccountId().isEmpty()){
+//                                                                    jsonObject.put("hasBalance",resource.getBalance().getAccountId());
+                                                                    balIdList.add(resource.getBalance().getAccountId());
+                                                                }
+                                                                System.out.println("getBalance=="+resource.getAccount().getAccountId());
 
-                List list = consentList.get(i).getPayload().getAccess().getResourcesList();
+                                                            case TRANSACTIONS: resource.getTransactions().getAccountId(); // non-empty
+                                                                if(!resource.getTransactions().getAccountId().isEmpty()){
+//                                                                    jsonObject.put("hasTransactions",resource.getTransactions().getAccountId());
+                                                                    tranIdList.add(resource.getTransactions().getAccountId());
+
+                                                                }
+                                                                System.out.println("getTransactions=="+resource.getAccount().getAccountId());
+
+                                                        }
+//                                                        jsonArray.put(jsonObject);
+                                                    }
+                
+                                                    for (int a = 0;a<accountIdList.size();a++){
+                                                        JSONObject j = new JSONObject();
+                                                        j.put("accountId",accountIdList.get(a));
+                                                        j.put("hasBalance","false");
+                                                        j.put("hasTransaction","false");
+                                                        if(balIdList.contains(accountIdList.get(a))){
+                                                            j.put("hasBalance",accountIdList.get(a));
+                                                        }
+                                                        if(tranIdList.contains(accountIdList.get(a))){
+                                                            j.put("hasTransaction",accountIdList.get(a));
+
+                                                        }
+                                                        newAccountJson.put(j);
+                                                    }
+//                 JSONObject accountObject = new JSONObject();
+                
+//                 List list = consentList.get(i).getPayload().getAccess().getResourcesList();
                 //System.out.println("list size----------------" + list.size());
-                JSONArray jsonArray1 = new JSONArray();
-                for (int j = 0; j < list.size(); j++) {
-                    JSONObject jsonObject1 = new JSONObject();
-                    String accountId = consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId();
+//                 JSONArray jsonArray1 = new JSONArray();
+//                 for (int j = 0; j < list.size(); j++) {
+//                     JSONObject jsonObject1 = new JSONObject();
+//                     String accountId = consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId();
 
-                    if (!accountId.isEmpty()) {
-                        jsonObject1.put("accountId",consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
-                        if (consentList.get(i).getPayload().getAccess().getResources(j).getBalance().getAccountId().isEmpty()){
-                            jsonObject1.put("hasBalance","false");
-                        }
-                        else {
-                            jsonObject1.put("hasBalance", consentList.get(i).getPayload().getAccess().getResources(j).getBalance().getAccountId());
-                        }
-                        if (consentList.get(i).getPayload().getAccess().getResources(j).getTransactions().getAccountId().isEmpty()){
-                            jsonObject1.put("hasTransactions","false");
-                        }else {
-                            jsonObject1.put("hasTransactions", consentList.get(i).getPayload().getAccess().getResources(j).getTransactions().getAccountId());
-                        }
-//                        jsonArray1.put(consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
-                        jsonArray1.put(jsonObject1);
-                    } else {
-                        //System.out.println("Entered null for account id");
-                    }
-                }
+//                     if (!accountId.isEmpty()) {
+//                         jsonObject1.put("accountId",consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
+//                         if (consentList.get(i).getPayload().getAccess().getResources(j).getBalance().getAccountId().isEmpty()){
+//                             jsonObject1.put("hasBalance","false");
+//                         }
+//                         else {
+//                             jsonObject1.put("hasBalance", consentList.get(i).getPayload().getAccess().getResources(j).getBalance().getAccountId());
+//                         }
+//                         if (consentList.get(i).getPayload().getAccess().getResources(j).getTransactions().getAccountId().isEmpty()){
+//                             jsonObject1.put("hasTransactions","false");
+//                         }else {
+//                             jsonObject1.put("hasTransactions", consentList.get(i).getPayload().getAccess().getResources(j).getTransactions().getAccountId());
+//                         }
+// //                        jsonArray1.put(consentList.get(i).getPayload().getAccess().getResources(j).getAccount().getAccountId());
+//                         jsonArray1.put(jsonObject1);
+//                     } else {
+//                         //System.out.println("Entered null for account id");
+//                     }
+//                 }
                 //System.out.println("JSon===="+jsonArray1);
                 accountObject.put("consentExpiry",consentList.get(i).getPayload().getExpiresAtMs());
-                accountObject.put("accountList",jsonArray1);
+                accountObject.put("accountList",newAccountJson);
                 accountObject.put("tppMemberId",consentList.get(i).getPayload().getTo().getId());
                 jsonArray.put(accountObject);
             }
