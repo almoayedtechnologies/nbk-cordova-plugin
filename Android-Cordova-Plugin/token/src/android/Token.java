@@ -1047,6 +1047,26 @@ public class Token extends CordovaPlugin {
 //                 accountList.add(jsonArray.getString(i));
 //             }
 
+             AccessTokenBuilder builder;
+            TokenProtos.Token activeAccessToken = tokenClient.getMemberBlocking(memberId).getActiveAccessTokenBlocking(tppMemberId);
+            builder = AccessTokenBuilder.fromPayload(activeAccessToken.getPayload());
+            for (int i = 0; i < jsonArray.length(); i++) {
+                                                        JSONObject jsonobject = jsonArray.getJSONObject(i);
+                                                        if(jsonobject.getString("hasTransaction") == "true" || jsonobject.getString("hasBalance") == "true"){
+                                                        builder.forAccount(jsonobject.getString("accountId"));
+                                                        }
+                                                        if(jsonobject.getString("hasTransaction") == "true"){
+                                                        builder.forAccountTransactions(jsonobject.getString("accountId"));
+                                                        }
+                                                        if(jsonobject.getString("hasBalance") == "true"){
+                                                        builder.forAccountBalances(jsonobject.getString("accountId"));
+                                                        }
+                                                    }
+
+            TokenProtos.TokenOperationResult result = tokenClient.getMemberBlocking(memberId).replaceAccessTokenBlocking(activeAccessToken, builder);
+
+            TokenProtos.Token newToken = result.getToken();
+            
             cordova.getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -1054,24 +1074,24 @@ public class Token extends CordovaPlugin {
                             .subscribe(new Consumer<Member>() {
                                 @Override
                                 public void accept(final Member member1) throws Exception {
-                                    member1.getActiveAccessToken(tppMemberId)
-                                            .subscribe(new Consumer<TokenProtos.Token>() {
-                                                @Override
-                                                public void accept(TokenProtos.Token token) throws Exception {
-                                                    AccessTokenBuilder accessTokenBuilder = AccessTokenBuilder.fromPayload(token.getPayload());
-                                                    for (int i = 0; i < jsonArray.length(); i++) {
-                                                        JSONObject jsonobject = jsonArray.getJSONObject(i);
-                                                        if(jsonobject.getString("hasTransaction") == "true" || jsonobject.getString("hasBalance") == "true"){
-                                                        accessTokenBuilder.forAccount(jsonobject.getString("accountId"));
-                                                        }
-                                                        if(jsonobject.getString("hasTransaction") == "true"){
-                                                        accessTokenBuilder.forAccountTransactions(jsonobject.getString("accountId"));
-                                                        }
-                                                        if(jsonobject.getString("hasBalance") == "true"){
-                                                        accessTokenBuilder.forAccountBalances(jsonobject.getString("accountId"));
-                                                        }
-                                                    }
-                                                    member1.replaceAccessToken(token, accessTokenBuilder)
+//                                     member1.getActiveAccessToken(tppMemberId)
+//                                             .subscribe(new Consumer<TokenProtos.Token>() {
+//                                                 @Override
+//                                                 public void accept(TokenProtos.Token token) throws Exception {
+//                                                     AccessTokenBuilder accessTokenBuilder = AccessTokenBuilder.fromPayload(token.getPayload());
+//                                                     for (int i = 0; i < jsonArray.length(); i++) {
+//                                                         JSONObject jsonobject = jsonArray.getJSONObject(i);
+//                                                         if(jsonobject.getString("hasTransaction") == "true" || jsonobject.getString("hasBalance") == "true"){
+//                                                         accessTokenBuilder.forAccount(jsonobject.getString("accountId"));
+//                                                         }
+//                                                         if(jsonobject.getString("hasTransaction") == "true"){
+//                                                         accessTokenBuilder.forAccountTransactions(jsonobject.getString("accountId"));
+//                                                         }
+//                                                         if(jsonobject.getString("hasBalance") == "true"){
+//                                                         accessTokenBuilder.forAccountBalances(jsonobject.getString("accountId"));
+//                                                         }
+//                                                     }
+                                                    member1.replaceAccessToken(newToken, builder)
                                                             .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
                                                                 @Override
                                                                 public void accept(TokenProtos.TokenOperationResult replaceToken) throws Exception {
@@ -1103,8 +1123,8 @@ public class Token extends CordovaPlugin {
                                             });
                                 }
                             });
-                }
-            });
+//                 }
+//             });
         } catch (Exception e){
             //e.printStackTrace();
             callbackContext.error(e.toString());
