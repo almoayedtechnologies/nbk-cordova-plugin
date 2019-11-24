@@ -497,10 +497,10 @@ public class Token extends CordovaPlugin {
                                                         j.put("hasBalance","false");
                                                         j.put("hasTransaction","false");
                                                         if(balIdList.contains(accountIdList.get(a))){
-                                                            j.put("hasBalance",accountIdList.get(a));
+                                                            j.put("hasBalance","true");
                                                         }
                                                         if(tranIdList.contains(accountIdList.get(a))){
-                                                            j.put("hasTransaction",accountIdList.get(a));
+                                                            j.put("hasTransaction","true");
 
                                                         }
                                                         newAccountJson.put(j);
