@@ -444,6 +444,10 @@ public class Token extends CordovaPlugin {
         List accountIdList;
         List balIdList;
         List tranIdList;
+        JSONArray jsonArray = new JSONArray();
+        JSONArray newAccountJson = new JSONArray();
+        JSONObject accountObject = new JSONObject();
+
         try {
             if(tokenClient == null) {
                 //System.out.println("=======================");
@@ -453,8 +457,7 @@ public class Token extends CordovaPlugin {
             }
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
 
-            JSONArray jsonArray = new JSONArray();
-            JSONArray newAccountJson = new JSONArray();
+            
 
             List<TokenProtos.Token> consentList = tokenClient.getMemberBlocking(memberId).getAccessTokensBlocking(null,20).getList();
             //System.out.println("accounts===="+consentList);
@@ -462,35 +465,30 @@ public class Token extends CordovaPlugin {
                                                     accountIdList = new ArrayList();
                                                     balIdList = new ArrayList();
                                                     tranIdList = new ArrayList();
-                List<TokenProtos.AccessBody.Resource> resources = tppList.getList().get(i).getPayload().getAccess().getResourcesList();
+                List<TokenProtos.AccessBody.Resource> resources = consentList.getList().get(i).getPayload().getAccess().getResourcesList();
                                                     JSONArray jsonArray = new JSONArray();
                                                     accountIdList = new ArrayList();
                                                     for (TokenProtos.AccessBody.Resource resource : resources) {
-                                                        JSONObject jsonObject = new JSONObject();
                                                         switch (resource.getResourceCase()) {
                                                             case ACCOUNT: resource.getAccount().getAccountId();
                                                             if(!resource.getAccount().getAccountId().isEmpty()){
-//                                                                jsonObject.put("accountId",resource.getAccount().getAccountId());
                                                                 accountIdList.add(resource.getAccount().getAccountId());
                                                             }
                                                             System.out.println("accountId=="+resource.getAccount().getAccountId());
                                                             case BALANCE: resource.getBalance().getAccountId(); // non-empty
                                                                 if(!resource.getBalance().getAccountId().isEmpty()){
-//                                                                    jsonObject.put("hasBalance",resource.getBalance().getAccountId());
                                                                     balIdList.add(resource.getBalance().getAccountId());
                                                                 }
                                                                 System.out.println("getBalance=="+resource.getAccount().getAccountId());
 
                                                             case TRANSACTIONS: resource.getTransactions().getAccountId(); // non-empty
                                                                 if(!resource.getTransactions().getAccountId().isEmpty()){
-//                                                                    jsonObject.put("hasTransactions",resource.getTransactions().getAccountId());
                                                                     tranIdList.add(resource.getTransactions().getAccountId());
 
                                                                 }
                                                                 System.out.println("getTransactions=="+resource.getAccount().getAccountId());
 
                                                         }
-//                                                        jsonArray.put(jsonObject);
                                                     }
                 
                                                     for (int a = 0;a<accountIdList.size();a++){
@@ -507,7 +505,6 @@ public class Token extends CordovaPlugin {
                                                         }
                                                         newAccountJson.put(j);
                                                     }
-//                 JSONObject accountObject = new JSONObject();
                 
 //                 List list = consentList.get(i).getPayload().getAccess().getResourcesList();
                 //System.out.println("list size----------------" + list.size());
