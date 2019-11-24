@@ -349,6 +349,7 @@ public class Token extends CordovaPlugin {
                 JSONObject accountObject = new JSONObject();
                 accountObject.put("tokenAccountId",accounts.get(i).id());
                 accountObject.put("bankAccountNumber",accounts.get(i).toProto().getAccountDetails().getIdentifier());
+                accountObject.put("accountStatus",accounts.get(i).toProto().getAccountDetails().getStatus());
                 accountObject.put("name",accounts.get(i).name());
                 accountObject.put("supportsSendPayment",accounts.get(i).accountFeatures().getSupportsSendPayment());
                 jsonArray.put(accountObject);
