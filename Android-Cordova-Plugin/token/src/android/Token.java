@@ -440,13 +440,7 @@ public class Token extends CordovaPlugin {
     }
 
     private void getConsents(JSONArray args,CallbackContext callbackContext){
-        JSONObject jsonObject;
-        List accountIdList;
-        List balIdList;
-        List tranIdList;
-        JSONArray jsonArray = new JSONArray();
-        JSONArray newAccountJson = new JSONArray();
-        JSONObject accountObject = new JSONObject();
+        
 
         try {
             if(tokenClient == null) {
@@ -457,7 +451,13 @@ public class Token extends CordovaPlugin {
             }
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
 
-            
+            JSONObject jsonObject;
+        List accountIdList;
+        List balIdList;
+        List tranIdList;
+        JSONArray jsonArray = new JSONArray();
+        JSONArray newAccountJson = new JSONArray();
+        JSONObject accountObject = new JSONObject();
 
             List<TokenProtos.Token> consentList = tokenClient.getMemberBlocking(memberId).getAccessTokensBlocking(null,20).getList();
             //System.out.println("accounts===="+consentList);
@@ -465,9 +465,9 @@ public class Token extends CordovaPlugin {
                                                     accountIdList = new ArrayList();
                                                     balIdList = new ArrayList();
                                                     tranIdList = new ArrayList();
-                List<TokenProtos.AccessBody.Resource> resources = consentList.getList().get(i).getPayload().getAccess().getResourcesList();
-                                                    JSONArray jsonArray = new JSONArray();
-                                                    accountIdList = new ArrayList();
+                List<TokenProtos.AccessBody.Resource> resources = consentList.get(i).getPayload().getAccess().getResourcesList();
+//                                                     JSONArray jsonArray = new JSONArray();
+//                                                     accountIdList = new ArrayList();
                                                     for (TokenProtos.AccessBody.Resource resource : resources) {
                                                         switch (resource.getResourceCase()) {
                                                             case ACCOUNT: resource.getAccount().getAccountId();
