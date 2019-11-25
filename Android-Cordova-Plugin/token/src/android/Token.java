@@ -1046,15 +1046,18 @@ public class Token extends CordovaPlugin {
             builder = AccessTokenBuilder.fromPayload(activeAccessToken.getPayload());
             for (int i = 0; i < jsonArray.length(); i++) {
                                                         JSONObject jsonobject = jsonArray.getJSONObject(i);
-                                                        if(jsonobject.getString("hasTransaction") == "true" || jsonobject.getString("hasBalance") == "true"){
-                                                        builder.forAccount(jsonobject.getString("accountId"));
-                                                        }
-                                                        if(jsonobject.getString("hasTransaction") == "true"){
-                                                        builder.forAccountTransactions(jsonobject.getString("accountId"));
-                                                        }
-                                                        if(jsonobject.getString("hasBalance") == "true"){
-                                                        builder.forAccountBalances(jsonobject.getString("accountId"));
-                                                        }
+                                                        if(jsonobject.getString("hasTransaction").equalsIgnoreCase("true") || jsonobject.getString("hasBalance").equalsIgnoreCase("true")){
+                    System.out.println("onAccount revoke==="+jsonobject.getString("hasTransaction"));
+                    builder.forAccount(jsonobject.getString("accountId"));
+                }
+                if(jsonobject.getString("hasTransaction").equalsIgnoreCase("true")){
+                    System.out.println("onAccount revoke==="+jsonobject.getString("hasTransaction"));
+                    builder.forAccountTransactions(jsonobject.getString("accountId"));
+                }
+                if(jsonobject.getString("hasBalance").equalsIgnoreCase("true")){
+                    System.out.println("onAccount revoke==="+jsonobject.getString("hasBalance"));
+                    builder.forAccountBalances(jsonobject.getString("accountId"));
+                }
                                                     }
 
             TokenProtos.TokenOperationResult result = tokenClient.getMemberBlocking(memberId).replaceAccessTokenBlocking(activeAccessToken, builder);
