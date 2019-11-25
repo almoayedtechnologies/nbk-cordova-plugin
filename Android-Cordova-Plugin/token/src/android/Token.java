@@ -1034,6 +1034,7 @@ public class Token extends CordovaPlugin {
     
     private void onAccountRevoke(JSONArray args,CallbackContext callbackContext) {
         JSONObject jsonObject;
+        AccessTokenBuilder builder;
         try {
             if (tokenClient == null) {
                 tokenClient = getTokenClient(context);
@@ -1041,13 +1042,6 @@ public class Token extends CordovaPlugin {
             String memberId = new JSONObject(args.getString(0)).getString("memberId");
             String tppMemberId = new JSONObject(args.getString(0)).getString("tppMemberId");
             JSONArray jsonArray = new JSONObject(args.getString(0)).getJSONArray("accounts");
-
-//             List<String> accountList = new ArrayList<>();
-//             for (int i = 0; i < jsonArray.length(); i++) {
-//                 accountList.add(jsonArray.getString(i));
-//             }
-
-             AccessTokenBuilder builder;
             TokenProtos.Token activeAccessToken = tokenClient.getMemberBlocking(memberId).getActiveAccessTokenBlocking(tppMemberId);
             builder = AccessTokenBuilder.fromPayload(activeAccessToken.getPayload());
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -1074,28 +1068,8 @@ public class Token extends CordovaPlugin {
                             .subscribe(new Consumer<Member>() {
                                 @Override
                                 public void accept(final Member member1) throws Exception {
-//                                     member1.getActiveAccessToken(tppMemberId)
-//                                             .subscribe(new Consumer<TokenProtos.Token>() {
-//                                                 @Override
-//                                                 public void accept(TokenProtos.Token token) throws Exception {
-//                                                     AccessTokenBuilder accessTokenBuilder = AccessTokenBuilder.fromPayload(token.getPayload());
-//                                                     for (int i = 0; i < jsonArray.length(); i++) {
-//                                                         JSONObject jsonobject = jsonArray.getJSONObject(i);
-//                                                         if(jsonobject.getString("hasTransaction") == "true" || jsonobject.getString("hasBalance") == "true"){
-//                                                         accessTokenBuilder.forAccount(jsonobject.getString("accountId"));
-//                                                         }
-//                                                         if(jsonobject.getString("hasTransaction") == "true"){
-//                                                         accessTokenBuilder.forAccountTransactions(jsonobject.getString("accountId"));
-//                                                         }
-//                                                         if(jsonobject.getString("hasBalance") == "true"){
-//                                                         accessTokenBuilder.forAccountBalances(jsonobject.getString("accountId"));
-//                                                         }
-//                                                     }
-                                                    member1.replaceAccessToken(newToken, builder)
-                                                            .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
-                                                                @Override
-                                                                public void accept(TokenProtos.TokenOperationResult replaceToken) throws Exception {
-                                                                    member1.endorseToken(replaceToken.getToken(), SecurityProtos.Key.Level.STANDARD)
+
+                                                                    member1.endorseToken(newToken, SecurityProtos.Key.Level.STANDARD)
                                                                             .subscribe(new Consumer<TokenProtos.TokenOperationResult>() {
                                                                                 @Override
                                                                                 public void accept(TokenProtos.TokenOperationResult replacedToken) throws Exception {
@@ -1107,26 +1081,13 @@ public class Token extends CordovaPlugin {
                                                                                     callbackContext.error(onError.getMessage());
                                                                                 }
                                                                             });
-                                                                }
-                                                            }, new Consumer<Throwable>() {
-                                                                @Override
-                                                                public void accept(Throwable onError) throws Exception {
-                                                                    callbackContext.error(onError.getMessage());
-
-                                                                }
-                                                            }, new Action() {
-                                                                @Override
-                                                                public void run() throws Exception {
-                                                                }
-                                                            });
+                                                              
                                                 }
                                             });
                                 }
                             });
-//                 }
-//             });
+
         } catch (Exception e){
-            //e.printStackTrace();
             callbackContext.error(e.toString());
         }
     }
