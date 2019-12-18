@@ -3,10 +3,10 @@ import TokenSdk
 class token: CDVPlugin {
     // global settings
     static let developerKey: String = "4qY7lqQw8NOl9gng0ZHgT4xdiDqxqoGVutuZwrUYQsI"
-    static let env: TokenCluster = TokenCluster.sandbox()
+    static let env: TokenCluster = TokenCluster.production()
     static let realm = "at-nbkb"
     static let recoveragentAliasType = Alias_Type.bank
-    static let recoveryAgent = "m:2woiQwHsY9RGqV6QrwEJqTvL2knX:5zKtXEAq"
+    //static let recoveryAgent = "m:2woiQwHsY9RGqV6QrwEJqTvL2knX:5zKtXEAq"
     static var crypto = TKCrypto()
     static var privilegedKey = Key()
     
@@ -16,6 +16,7 @@ class token: CDVPlugin {
         var name: String
         var supportsSendPayment: Bool
         var isLocked: Bool
+        var accountStatus : String
     }
     
     struct transfer: Codable {
@@ -30,7 +31,7 @@ class token: CDVPlugin {
     struct consent: Codable {
         var tppMemberId: String
         var consentExpiry: String
-        var accountList: [String]
+        var accountList: [[String:String]]
     }
     
     // create and return a token client object
@@ -41,6 +42,7 @@ class token: CDVPlugin {
         builder?.tokenCluster = token.env
         builder?.port = 443
         builder?.useSsl = true
+        builder?.timeoutMs = 20 * 1000
         builder?.developerKey = token.developerKey
         return (builder?.build())!
     }
@@ -65,6 +67,20 @@ class token: CDVPlugin {
         alias.value = value
         return alias
     }
+    
+    func getBankMemberId() -> String {
+        let alias = Alias()
+        alias.type = token.recoveragentAliasType
+        alias.value = token.realm
+        var memberIdvalue = String()
+        getTokenClient().getMemberId(alias, onSuccess: { member in
+            memberIdvalue = member!
+        }) { Error in
+            memberIdvalue = Error.localizedDescription as! String
+        }
+        return memberIdvalue
+    }
+    
     
     // get recover agent alias
     
@@ -103,9 +119,8 @@ class token: CDVPlugin {
         
         // method specific vars
         var memberId = String()
-        
         // create a member and return member id
-        getTokenClient().createMember(makeAliasObject(value: aliasValue,type:aliasType), recoveryAgent:token.recoveryAgent, onSuccess: { TKMember in
+        getTokenClient().createMember(makeAliasObject(value: aliasValue,type:aliasType), recoveryAgent:getBankMemberId(), onSuccess: { TKMember in
             print("createMember:success", TKMember.id)
             memberId = TKMember.id
             dispatchGrp.leave()
@@ -263,14 +278,18 @@ class token: CDVPlugin {
         
         getTokenClient().getMember(memberId, onSuccess: { Member in
             Member.getAccounts({ accountList in
-                
+                  print("accountList accountList: ", accountList)
+                  print(accountList)
                 for accountElement in accountList {
+                    print(accountElement)
                     var accountStruct = account.init(
                         tokenAccountId: accountElement.id,
                         bankAccountNumber: accountElement.accountDetails.identifier,
                         name: accountElement.name,
                         supportsSendPayment: accountElement.accountFeatures!.supportsSendPayment,
-                        isLocked: accountElement.isLocked
+                        isLocked: accountElement.isLocked,
+                        accountStatus : accountElement.accountDetails.status
+                        //accountStatus: "obblocked"
                     )
                     do {
                         let jsonData = try jsonEncoder.encode(accountStruct)
@@ -341,7 +360,8 @@ class token: CDVPlugin {
                     bankAccountNumber: TKAccount.accountDetails.identifier,
                     name: TKAccount.name,
                     supportsSendPayment: TKAccount.accountFeatures!.supportsSendPayment,
-                    isLocked: TKAccount.isLocked
+                    isLocked: TKAccount.isLocked,
+                    accountStatus:TKAccount.accountDetails.status
                 )
                 
                 let jsonData = try! jsonEncoder.encode(accountStruct)
@@ -402,8 +422,12 @@ class token: CDVPlugin {
                 for resourceElement in tppResources.items {
                     var accountlist: [String] = []
                     let resourceArrayvalue: NSMutableArray = resourceElement.payload!.access.resourcesArray
+                    var array : [[String:String]] = [[:]]
                     
                     if resourceArrayvalue.count != 0 {
+                        var permission_array : [Dictionary<String,String>] = []
+                        var resource_dic : [String:String] = [:]
+                        var accountlist : [String] = []
                         for resource in resourceArrayvalue {
                             var temp: AccessBody_Resource = resource as! AccessBody_Resource
                             
@@ -412,12 +436,45 @@ class token: CDVPlugin {
                             }
                             accountlist.removeAll(where: { $0 == "" })
                         }
+                 
+                    for accounts in accountlist{
+                        resource_dic["accountId"] = accounts
+                        resource_dic["hasBalance"] = "false"
+                        resource_dic["hasTransaction"] = "false"
+
+                        for resource in resourceArrayvalue
+                        {
+                            print("resource:::",resource)
+                            let temp : AccessBody_Resource = resource as! AccessBody_Resource
+                          
+                            if(temp.balance != nil)
+                            {
+                                if(accounts == temp.balance.accountId)
+                                {
+                                    print("temp.balance.accountId::",temp.balance.accountId)
+                                    resource_dic["hasBalance"] = "true"
+                                }
+                            }
+                            
+                            if(temp.transactions != nil){
+                                if(accounts == temp.transactions.accountId)
+                                {
+                                 print("temp.transactions.accountId::",temp.transactions.accountId)
+                                resource_dic["hasTransaction"] = "true"
+                                }
+                            }
+                           
+                           
+                        }
+                        permission_array.append(resource_dic)
                     }
+                     array = permission_array.filter{ !$0.values.contains("")}
+                   }
                     
                     var consentStruct = consent.init(
                         tppMemberId: resourceElement.payload.to.id_p,
                         consentExpiry: String(resourceElement.payload!.expiresAtMs),
-                        accountList: accountlist
+                        accountList: array
                     )
                     
                     do {
@@ -808,7 +865,7 @@ class token: CDVPlugin {
         let memberId: String = args["memberId"] as! String
         let payload =  args["payload"] as! [AnyHashable:Any]
         let approvedAccounts: [String] = args["accounts"] as! [String]
-        let ttpMemberId: String = args["ttpMemberId"] as! String
+        let ttpMemberId: String = args["tppMemberId"] as! String
         
         let resultfromToken = TKJson.deserializeMessage(of: CreateAndEndorseToken.self, from: payload) as! CreateAndEndorseToken
         print("resultfromToken::", resultfromToken)
@@ -919,7 +976,7 @@ class token: CDVPlugin {
         let memberId: String = args["memberId"] as! String
         let payload = args["payload"]  as! [AnyHashable:Any]
         let debitAccount: String = args["account"] as! String
-        let ttpMemberId: String = args["ttpMemberId"] as! String
+        let ttpMemberId: String = args["tppMemberId"] as! String
         
         let resultfromToken = TKJson.deserializeMessage(of: CreateAndEndorseToken.self, from: payload) as! CreateAndEndorseToken
         print("resultfromToken:", resultfromToken)
@@ -1047,8 +1104,6 @@ class token: CDVPlugin {
         let memberRecoveryOperator : String = args["mro"] as! String
         
         var mro = TKJson.deserializeMessage(of: MemberRecoveryOperation.self, fromJSON:memberRecoveryOperator) as! MemberRecoveryOperation
-        print("In getRecoveredMember privilegedKey:::",token.privilegedKey)
-        print("In getRecoveredMember crypto:::",token.crypto)
         getTokenClient().completeRecovery(memberId, recoveryOperations: [mro], privilegedKey: token.privilegedKey, crypto: token.crypto, onSuccess: { recoveredMember in
             recoveredMemberId = recoveredMember.id
             status = true
@@ -1215,7 +1270,6 @@ class token: CDVPlugin {
         let aliasType: String = args["aliasType"] as! String
         let aliasValue: String = args["aliasValue"] as! String
         var memberId = String()
-        
         getTokenClient().getMemberId(makeAliasObject(value: aliasValue, type: aliasType), onSuccess: { member in
             if(member == nil)
             {
@@ -1468,21 +1522,73 @@ class token: CDVPlugin {
         var args = argDict.arguments![0] as! [String: Any]
         print("received dict arguments", args)
         let memberId: String = args["memberId"] as! String
-        var accountsTorevoke: [String] = args["accounts"] as! [String]
-        let ttpMemberId: String = args["ttpMemberId"] as! String
+//        var accountsTorevoke: [String] = args["accounts"] as! [String]
+        let ttpMemberId: String = args["tppMemberId"] as! String
+        let accountReceived: [Any] = args["accounts"] as! [Any]
         let resources : AccessBody_Resource
+        var accountsWithAll: [String] = []
+        var accountsWithBalance: [String] = []
+        var accountsWithTran: [String] = []
+        var accountsWithAccount: [String] = []
+        var account : Dictionary<String,String> = [:]
+
         
         
         getTokenClient().getMember(memberId, onSuccess: { member in
             member.getActiveAccessToken(ttpMemberId, onSuccess:{token in
                 
-                let builder = AccessTokenBuilder.fromPayload(token.payload)
-                accountsTorevoke.forEach{ accountId in
-                    builder!.forAccount(accountId)
-                    builder!.forAccountBalances(accountId)
-                    builder!.forAccountTransactions(accountId)
-                }
                 
+                 for accounts in accountReceived{
+                     account = accounts as! Dictionary<String, String>
+                     if(account["hasBalance"] == "true")&&(account["hasTransaction"] == "true")
+                     {
+                         accountsWithAll.append(account["accountId"]!)
+                     }
+                     if(account["hasBalance"] == "true")&&(account["hasTransaction"] == "false")
+                     {
+                         accountsWithBalance.append(account["accountId"]!)
+                     }
+                     if(account["hasBalance"] == "false")&&(account["hasTransaction"] == "true")
+                     {
+                         accountsWithTran.append(account["accountId"]!)
+                     }
+                     if(account["hasBalance"] == "false")&&(account["hasTransaction"] == "false")
+                     {
+                           accountsWithAccount.append(account["accountId"]!)
+                     }
+                 }
+                 
+                 let builder = AccessTokenBuilder.fromPayload(token.payload)
+                 if(accountsWithAll.count != 0)
+                 {
+                 accountsWithAll.forEach{ accountId in
+                     builder!.forAccount(accountId)
+                     builder!.forAccountBalances(accountId)
+                     builder!.forAccountTransactions(accountId)
+                 }
+                 }
+                 if(accountsWithBalance.count != 0)
+                 {
+                     accountsWithBalance.forEach{ accountId in
+                                        builder!.forAccount(accountId)
+                                        builder!.forAccountBalances(accountId)
+                                    }
+                 }
+                 if(accountsWithTran.count != 0)
+                {
+                    accountsWithTran.forEach{ accountId in
+                                       builder!.forAccount(accountId)
+                                       builder!.forAccountTransactions(accountId)
+                                   }
+                }
+                 if(accountsWithAccount.count != 0)
+                 {
+                     accountsWithAccount.forEach{ accountId in
+                                        builder!.forAccount(accountId)
+                                    }
+                 }
+
+
                 member.replaceAccessToken(token, accessTokenBuilder: builder!, onSuccess: { TokenOperationResult in
                     member.endorseToken(TokenOperationResult.token, withKey: Key_Level.standard, onSuccess: { result in
                         
@@ -1537,4 +1643,7 @@ class token: CDVPlugin {
     
     
 }
+
+
+
 
