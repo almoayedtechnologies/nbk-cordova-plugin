@@ -28,12 +28,7 @@ import io.token.user.AccessTokenBuilder;
 import io.token.user.Account;
 import io.token.user.Member;
 import io.token.user.TokenClient;
-// import custom.TokenClient;
-
 import io.token.proto.common.alias.AliasProtos;
-// import io.reactivex.android.schedulers.AndroidSchedulers;
-// import io.reactivex.functions.Action;
-// import io.reactivex.functions.Consumer;
 import android.app.KeyguardManager;
 import android.content.Context;
 import io.token.proto.common.token.TokenProtos;
@@ -55,14 +50,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
-// import okhttp3.Call;
-// import okhttp3.Callback;
-// import okhttp3.MediaType;
-// import okhttp3.OkHttpClient;
-// import okhttp3.Request;
-// import okhttp3.RequestBody;
-// import okhttp3.Response;
-
 /**
  * This class echoes a string called from JavaScript.
  */
@@ -83,11 +70,9 @@ public class Token extends CordovaPlugin {
     NotificationProtos.AddKey addkey;
     public static final String developerKey = "4qY7lqQw8NOl9gng0ZHgT4xdiDqxqoGVutuZwrUYQsI";
     public static final String realm = "at-nbkb";
-//     public static final String realm = "at-amex";
     public NotificationProtos.CreateAndEndorseToken content;
     public NotificationProtos.CreateAndEndorseToken.Builder builder;
     public String recoveryAgent;
-    //    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.CUSTOM;
     public AliasProtos.Alias.Type type_user;
     public static final AliasProtos.Alias.Type type_bank = AliasProtos.Alias.Type.BANK;
     public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.PRODUCTION;
