@@ -90,7 +90,7 @@ public class Token extends CordovaPlugin {
     //    public static final AliasProtos.Alias.Type type_user = AliasProtos.Alias.Type.CUSTOM;
     public AliasProtos.Alias.Type type_user;
     public static final AliasProtos.Alias.Type type_bank = AliasProtos.Alias.Type.BANK;
-    public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.SANDBOX;
+    public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.PRODUCTION;
     Context context;
 
     @Override
