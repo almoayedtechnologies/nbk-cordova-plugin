@@ -849,6 +849,11 @@ public class Token extends CordovaPlugin {
             tokenClient = getTokenClient(context);
 
             cryptoEngine = new AKSCryptoEngineFactory(context,userAuthenticationStore,true).create(memberId);
+             try{
+                cryptoEngine.deleteKeys();
+            }catch(Exception e){
+                System.out.println("error while deleting the keys"+e);
+            }
             privilegedKey = cryptoEngine.generateKey(SecurityProtos.Key.Level.PRIVILEGED);
             authorization = tokenClient.createRecoveryAuthorizationBlocking(memberId, privilegedKey);
             MemberProtos.MemberRecoveryOperation.Authorization.Builder signatureBuilder = authorization.toBuilder();
