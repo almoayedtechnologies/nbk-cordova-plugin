@@ -50,7 +50,7 @@ dependencies {
 implementation group: 'com.google.auto.value', name: 'auto-value-annotations', version: '1.6.3'
 implementation group: 'com.google.auto.value', name: 'auto-value', version: '1.6.5'
 
-implementation("io.token.sdk:tokenio-sdk-android:2.3.7") {
+implementation("io.token.sdk:tokenio-sdk-android:2.6.4") {
  exclude group: "com.google.api.grpc", module: "proto-google-common-protos"
  exclude group:"io.token.rpc", module:"tokenio-rpc-client"
 }
