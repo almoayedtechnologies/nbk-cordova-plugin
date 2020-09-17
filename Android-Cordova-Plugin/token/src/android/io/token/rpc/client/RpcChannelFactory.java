@@ -380,7 +380,7 @@ public final class RpcChannelFactory {
 //                }
 
 
-                ManagedChannel channel = OkHttpChannelBuilder.forAddress("api-grpc.token.io",443)
+                ManagedChannel channel = OkHttpChannelBuilder.forAddress("api-grpc.sandbox.token.io",443)
                         .useTransportSecurity().build();
 //                ManagedChannel channel = builder
 //                        .intercept(allInterceptors)

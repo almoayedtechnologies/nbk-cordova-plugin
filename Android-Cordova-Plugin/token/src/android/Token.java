@@ -75,7 +75,7 @@ public class Token extends CordovaPlugin {
     public String recoveryAgent;
     public AliasProtos.Alias.Type type_user;
     public static final AliasProtos.Alias.Type type_bank = AliasProtos.Alias.Type.BANK;
-    public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.PRODUCTION;
+    public static final io.token.TokenClient.TokenCluster cluster = io.token.TokenClient.TokenCluster.SANDBOX;
     Context context;
 
     @Override
